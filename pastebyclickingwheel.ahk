@@ -1,69 +1,52 @@
-﻿mousedrag_treshold := 20 ; pixels
-middleclick_available := 15 ; seconds
+﻿mousedrag_treshold := 20 ; en pixels
+middleclick_available := 15 ; en secondes
 
+; On affecte le clic-molette à la fonction 'paste_selection'
 Hotkey mbutton, paste_selection
+; On désactive le clic-molette
 Hotkey mbutton, off
-Hotkey rbutton, cancel_paste
-Hotkey rbutton, off
-    
-    
+
+
 #IfWinNotActive ahk_class ConsoleWindowClass
 ~lButton::
-  MouseGetPos, mousedrag_x, mousedrag_y
-  keywait lbutton
-  mousegetpos, mousedrag_x2, mousedrag_y2
-  if (abs(mousedrag_x2 - mousedrag_x) > mousedrag_treshold
-    or abs(mousedrag_y2 - mousedrag_y) > mousedrag_treshold)
-  {
-    wingetclass class, A
-    if (class == "Emacs")
-      sendinput !w
-    else
-    {
-		Clipsave := clipboard ;On sauvegarde le contenu du clipboard
-		send, ^c ;On fait un Ctrl-C
-		ClipWait
-		tampon := clipboard ;On sauvegarde la nouvelle valeur
-		clipboard := Clipsave ;On restaure le clipboard avant le Ctrl-C
+	MouseGetPos, mousedrag_x, mousedrag_y
+	keywait lbutton
+	mousegetpos, mousedrag_x2, mousedrag_y2
+	if (abs(mousedrag_x2 - mousedrag_x) > mousedrag_treshold
+		or abs(mousedrag_y2 - mousedrag_y) > mousedrag_treshold)
+	{
+		wingetclass class, A
+		if (class == "Emacs")
+			sendinput !w
+		else
+		{
+			; On sauvegarde le contenu du clipboard
+			clip_save := clipboard
+			; On fait un Ctrl-C
+			send, ^c
+			clipwait
+			; On sauvegarde la nouvelle valeur
+			temp_clip := clipboard 
+			; On restaure le clipboard avant le Ctrl-C
+			clipboard := clip_save 
+		}
+		hotkey mbutton, on
 	}
-    settimer follow_mouse, 100
-    settimer cleanup, % middleclick_available * 1000
-    hotkey mbutton, on
-    hotkey rbutton, on
-  }
-  return
+	return
 #IfWinNotActive
 
-follow_mouse:
-  ;tooltip copy
-  return
-  
 paste_selection:
-  sendinput {lbutton}
-  WinGetClass class, A
-  if (class == "Emacs")
-    SendInput ^y
-  else
-    Clipboard := tampon ;On remplace le clipboard par le tampon
-    SendInput ^v ;Ctrl-V
-  ;gosub cleanup
-  return
- 
-cancel_paste:
-  sendinput {rbutton}
-  gosub cleanup
-  return  
-  
-cleanup:
-  Hotkey mbutton, off
-  Hotkey rbutton, off
-  SetTimer cleanup, off
-  settimer follow_mouse, off
-  tooltip
-  Return
-  
-  
-;; clipx
-^mbutton::
-  sendinput ^+{insert}
-  return
+	sendinput {lbutton}
+	WinGetClass class, A
+	if (class == "Emacs")
+		SendInput ^y
+	else
+	{
+		;On remplace le clipboard par le tampon
+		clipboard := temp_clip
+		; On fait Ctrl-V
+		sendinput ^v
+		; On restore le clipboard du Ctrl-C
+		clipboard := clip_save
+	}
+	return
