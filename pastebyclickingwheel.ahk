@@ -16,9 +16,8 @@ Hotkey mbutton, off
 		or abs(mousedrag_y2 - mousedrag_y) > mousedrag_treshold)
 	{
 		wingetclass class, A
-		if (class == "Emacs")
-			sendinput !w
-		else
+		MsgBox %class%
+		if (class <> "Emacs") and (class <> "mintty") and (class <> "TaskListThumbnailWnd") and (class <> "PuTTYConfigBox") and (class <> "PuTTY")
 		{
 			; On sauvegarde le contenu du clipboard
 			clip_save := clipboard
@@ -28,7 +27,7 @@ Hotkey mbutton, off
 			; On sauvegarde la nouvelle valeur
 			temp_clip := clipboard 
 			; On restaure le clipboard avant le Ctrl-C
-			clipboard := clip_save 
+			clipboard := clip_save
 		}
 		hotkey mbutton, on
 	}
@@ -38,9 +37,7 @@ Hotkey mbutton, off
 paste_selection:
 	sendinput {lbutton}
 	WinGetClass class, A
-	if (class == "Emacs")
-		SendInput ^y
-	else
+	if (class <> "Emacs")
 	{
 		;On remplace le clipboard par le tampon
 		clipboard := temp_clip
